@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HavHabit</title>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+    <div class="app" role="application" aria-label="HavHabit Application">
+        <header>
+            <div>
+                <h1>HavHabit Tracker - Keeps streaks alive</h1>
+                <div class="small">Mark habits done for today - data saved in your browser.</div>
+            </div>
+            <div class="top-actions">
+                <button id="exportCSV" class="btn">Export CSV</button>
+                <button id="resetAll" class="btn ghost">Reset All</button>
+                <button id="logoutBtn" class="btn ghost">Logout</button>
+            </div>
+        </header>
+
+        <div class="success-meter-container">
+            <div class="success-header">
+                <div>
+                    <div class="success-title">Your Success Score</div>
+                    <div class="success-level" id="successLevel">🚀 Just Beginning</div>
+                </div>
+                <div class="success-percentage" id="successPercent">0%</div>
+            </div>
+            <div class="progress success-meter" id="successMeter"><i></i></div>
+            <div class="small" id="successStats" style="margin-top:4px; text-align:center;">Track habits to build your score</div>
+            <div class="motivational-quote" id="motivationalQuote"></div>
+        </div>
+
+        <form id="addForm" aria-label="Add habit">
+            <input id="habitName" type="text" placeholder="Add a habit (ex: Read 20 minutes)" required />
+            <select id="habitCategory" class="category-select">
+                <option value="health">🏃 Health</option>
+                <option value="learning">📚 Learning</option>
+                <option value="productivity">💼 Productivity</option>
+                <option value="mindfulness">🧘 Mindfulness</option>
+                <option value="social">👥 Social</option>
+                <option value="other">✨ Other</option>
+            </select>
+            <input id="weeklyGoal" type="number" placeholder="Goal (days/week)" min="1" max="7" value="7" class="goal-input" />
+            <button class="btn" type="submit">Add</button>
+        </form>
+
+        <div class="insights-container" id="insightsContainer" style="display:none;">
+            <div class="insight-card">
+                <div class="insight-icon">🔥</div>
+                <div class="insight-content">
+                    <div class="insight-label">Longest Streak</div>
+                    <div class="insight-value" id="longestStreak">0 days</div>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">⚠️</div>
+                <div class="insight-content">
+                    <div class="insight-label">At Risk</div>
+                    <div class="insight-value" id="atRisk">0 habits</div>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🎯</div>
+                <div class="insight-content">
+                    <div class="insight-label">This Week</div>
+                    <div class="insight-value" id="weekProgress">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <section id="habits" class="habit-list" aria-live="polite"></section>
+
+        <footer>
+            <div class="small">Today: <strong id="todayLabel"></strong></div>
+            <div class="small">Total habits: <span id="countHabits">0</span></div>
+        </footer>
+    </div>
+
+    <div class="theme-toggle">
+        <label>
+            <input type="checkbox" id="darkModeToggle">
+            Dark Mode
+        </label>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
