@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to HavHabit - Setup</title>
+    <link rel="stylesheet" href="onboarding-styles.css"/>
+</head>
+<body>
+    <div class="onboarding-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="onboarding-content">
+            <!-- Question 1 -->
+            <div class="question-card active" data-question="1">
+                <div class="question-number">Question 1 of 5</div>
+                <h2 class="question-title">🌟 What's one good habit you already feel proud of?</h2>
+                <p class="question-subtitle">Let's celebrate what you're already doing right!</p>
+                
+                <div class="quick-picks">
+                    <button class="quick-pick" data-value="Exercise regularly">🏃 Exercise regularly</button>
+                    <button class="quick-pick" data-value="Read daily">📚 Read daily</button>
+                    <button class="quick-pick" data-value="Healthy eating">🥗 Healthy eating</button>
+                    <button class="quick-pick" data-value="Meditation">🧘 Meditation</button>
+                    <button class="quick-pick" data-value="Good sleep schedule">😴 Good sleep schedule</button>
+                    <button class="quick-pick" data-value="Journaling">✍️ Journaling</button>
+                </div>
+                
+                <div class="custom-input-container">
+                    <input type="text" id="proudHabit" class="custom-input" placeholder="Or type your own..." />
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question-card" data-question="2">
+                <div class="question-number">Question 2 of 5</div>
+                <h2 class="question-title">🎯 What's one habit you want to improve or stop doing?</h2>
+                <p class="question-subtitle">Awareness is the first step to change.</p>
+                
+                <div class="quick-picks">
+                    <button class="quick-pick" data-value="Excessive phone scrolling">📱 Excessive phone scrolling</button>
+                    <button class="quick-pick" data-value="Late-night eating">🍕 Late-night eating</button>
+                    <button class="quick-pick" data-value="Skipping workouts">🏋️ Skipping workouts</button>
+                    <button class="quick-pick" data-value="Procrastination">⏰ Procrastination</button>
+                    <button class="quick-pick" data-value="Poor sleep habits">😴 Poor sleep habits</button>
+                    <button class="quick-pick" data-value="Smoking">🚬 Smoking</button>
+                    <button class="quick-pick" data-value="Overspending">💸 Overspending</button>
+                </div>
+                
+                <div class="custom-input-container">
+                    <input type="text" id="improveHabit" class="custom-input" placeholder="Or type your own..." />
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question-card" data-question="3">
+                <div class="question-number">Question 3 of 5</div>
+                <h2 class="question-title">💰 What's one financial goal you want to work toward?</h2>
+                <p class="question-subtitle">Your habits and finances are connected!</p>
+                
+                <div class="quick-picks">
+                    <button class="quick-pick" data-value="Save $1000+ emergency fund">🏦 Save $1000+ emergency fund</button>
+                    <button class="quick-pick" data-value="Pay off debt">💳 Pay off debt</button>
+                    <button class="quick-pick" data-value="Save for a big purchase">🏠 Save for a big purchase</button>
+                    <button class="quick-pick" data-value="Start investing">📈 Start investing</button>
+                    <button class="quick-pick" data-value="Reduce monthly expenses">📉 Reduce monthly expenses</button>
+                    <button class="quick-pick" data-value="Build passive income">💵 Build passive income</button>
+                </div>
+                
+                <div class="custom-input-container">
+                    <input type="text" id="financialGoal" class="custom-input" placeholder="Or type your own..." />
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question-card" data-question="4">
+                <div class="question-number">Question 4 of 5</div>
+                <h2 class="question-title">😊 How are you feeling today?</h2>
+                <p class="question-subtitle">Your emotional baseline helps us personalize your experience.</p>
+                
+                <div class="mood-selector">
+                    <button class="mood-btn" data-value="Amazing">
+                        <span class="mood-emoji">🤩</span>
+                        <span class="mood-label">Amazing</span>
+                    </button>
+                    <button class="mood-btn" data-value="Good">
+                        <span class="mood-emoji">😊</span>
+                        <span class="mood-label">Good</span>
+                    </button>
+                    <button class="mood-btn" data-value="Okay">
+                        <span class="mood-emoji">😐</span>
+                        <span class="mood-label">Okay</span>
+                    </button>
+                    <button class="mood-btn" data-value="Struggling">
+                        <span class="mood-emoji">😔</span>
+                        <span class="mood-label">Struggling</span>
+                    </button>
+                    <button class="mood-btn" data-value="Overwhelmed">
+                        <span class="mood-emoji">😰</span>
+                        <span class="mood-label">Overwhelmed</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="question-card" data-question="5">
+                <div class="question-number">Question 5 of 5</div>
+                <h2 class="question-title">🚀 Where do you want to be 1 year from now?</h2>
+                <p class="question-subtitle">Paint a picture of your future self.</p>
+                
+                <textarea id="futureVision" class="future-vision-input" placeholder="In one year, I want to be...&#10;&#10;Examples:&#10;• Healthier, with consistent exercise habits&#10;• Financially stable with $5000 saved&#10;• More focused and productive at work&#10;• Free from bad habits that hold me back&#10;&#10;Be specific! Your vision will guide your journey." rows="8"></textarea>
+                
+                <div class="vision-tips">
+                    💡 Tip: Be specific! The clearer your vision, the stronger your motivation.
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation-buttons">
+                <button class="btn-back" id="backBtn" style="display:none;">← Back</button>
+                <button class="btn-next" id="nextBtn">Next →</button>
+                <button class="btn-finish" id="finishBtn" style="display:none;">Start My Journey 🎯</button>
+            </div>
+        </div>
+
+        <div class="onboarding-footer">
+            <p>🔒 Your data is private and stored only on your device</p>
+        </div>
+    </div>
+
+    <script src="onboarding.js"></script>
+</body>
+</html>

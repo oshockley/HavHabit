@@ -112,7 +112,9 @@ if (document.getElementById('signupForm')) {
 
         // Auto login
         createSession(newUser);
-        window.location.href = 'index.html';
+        
+        // Redirect to onboarding instead of main app
+        window.location.href = 'onboarding.html';
     });
 }
 
@@ -144,6 +146,13 @@ if (document.getElementById('loginForm')) {
 
         // Login successful
         createSession(user);
-        window.location.href = 'index.html';
+        
+        // Check if onboarding is completed
+        const onboardingCompleted = localStorage.getItem(`onboarding:${user.id}:completed`);
+        if (onboardingCompleted === 'true') {
+            window.location.href = 'index.html';
+        } else {
+            window.location.href = 'onboarding.html';
+        }
     });
 }
