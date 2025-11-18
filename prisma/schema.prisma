@@ -1,0 +1,155 @@
+// Prisma Schema for HavHabit Backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Use Supabase PostgreSQL
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String   // Hashed
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  habits        Habit[]
+  analytics     Analytics?
+  gamification  Gamification?
+  profile       UserProfile?
+  waitlist      Waitlist?
+  
+  @@map("users")
+}
+
+model UserProfile {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Onboarding data
+  proudHabit            String?
+  improveHabit          String?
+  financialGoal         String?
+  currentMood           String?
+  futureVision          String?
+  motivationLevel       Int?
+  primaryFocus          String?
+  personalizedIdentity  Json?    // Array of identity statements
+  suggestedHabits       Json?    // Array of habit suggestions
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("user_profiles")
+}
+
+model Habit {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name          String
+  type          String   // 'good' or 'bad'
+  category      String?
+  difficulty    String?
+  priority      Int      @default(0)
+  
+  // Identity & Psychology
+  identity      String?
+  trigger       String?
+  
+  // Tracking
+  completions   Json     // Array of ISO date strings
+  streak        Int      @default(0)
+  bestStreak    Int      @default(0)
+  
+  // Financial (for bad habits)
+  costPerDay    Float?
+  
+  // Notes
+  notes         String?
+  todayNote     String?
+  
+  // Streak features
+  streakFrozen  Boolean  @default(false)
+  frozenUntil   String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("habits")
+  @@index([userId])
+}
+
+model Gamification {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  points        Int      @default(0)
+  level         Int      @default(1)
+  achievements  Json     // Array of achievement objects
+  streakHistory Json     // Object mapping habit IDs to streak data
+  lastUpdate    String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("gamification")
+}
+
+model Analytics {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  failurePatterns   Json     // Object mapping patterns
+  triggerLogs       Json     // Array of trigger log objects
+  urgeSurfLogs      Json     // Array of urge surfing sessions
+  evidencePhotos    Json     // Array of photo evidence objects
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("analytics")
+}
+
+model Waitlist {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  userId        String?  @unique
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  timestamp     DateTime @default(now())
+  referrer      String?
+  utmSource     String?
+  
+  @@map("waitlist")
+  @@index([email])
+}
+
+model Subscription {
+  id            String   @id @default(uuid())
+  userId        String   
+  
+  tier          String   // 'free', 'premium', 'yearly'
+  status        String   // 'active', 'cancelled', 'expired'
+  
+  startDate     DateTime @default(now())
+  endDate       DateTime?
+  
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("subscriptions")
+  @@index([userId])
+}
