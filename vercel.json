@@ -1,8 +1,6 @@
 {
-  "buildCommand": "cd $VERCEL_PROJECT_ROOT && npm install",
   "framework": "nextjs",
-  "installCommand": "npm install",
+  "buildCommand": "next build",
   "devCommand": "next dev",
-  "outputDirectory": ".next",
-  "ignoreCommand": "echo 'Skipping build check'"
+  "installCommand": "npm install"
 }
