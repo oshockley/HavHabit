@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/auth'
+import { corsHeaders, handleCORS } from '@/lib/cors'
 
 // GET /api/habits - Get all habits for user
 export async function GET(request: NextRequest) {
   const auth = getUserFromRequest(request)
   if (!auth) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders() })
   }
 
   try {
@@ -15,10 +16,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ habits })
+    return NextResponse.json({ habits }, { headers: corsHeaders() })
   } catch (error) {
     console.error('Get habits error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders() })
   }
 }
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = getUserFromRequest(request)
   if (!auth) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders() })
   }
 
   try {
@@ -50,9 +51,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ habit })
+    return NextResponse.json({ habit }, { headers: corsHeaders() })
   } catch (error) {
     console.error('Create habit error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders() })
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { signToken } from '@/lib/auth'
+import { corsHeaders, handleCORS } from '@/lib/cors'
 import { z } from 'zod'
 
 const SignupSchema = z.object({
@@ -9,6 +10,10 @@ const SignupSchema = z.object({
   password: z.string().min(6),
   name: z.string().optional(),
 })
+
+export async function OPTIONS() {
+  return handleCORS()
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { error: 'User already exists' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       )
     }
 
@@ -49,12 +54,12 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
       },
-    })
+    }, { headers: corsHeaders() })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues }, { status: 400, headers: corsHeaders() })
     }
     console.error('Signup error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders() })
   }
 }
