@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HavHabit - The Psychology-First Habit Tracker</title>
+    <meta name="description" content="Build lasting habits with science-backed psychology. Track habits, break bad ones, and see how they impact your finances. Start your transformation today.">
+    <link rel="stylesheet" href="landing-styles.css"/>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <div class="logo">🎯 HavHabit</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="login.html" class="btn-login">Login</a>
+                <a href="#waitlist" class="btn-cta">Get Early Access</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">🔥 10,000+ habits tracked this week</div>
+                <h1 class="hero-title">
+                    Build Habits That<br>
+                    <span class="gradient-text">Actually Stick</span>
+                </h1>
+                <p class="hero-subtitle">
+                    The only habit tracker built on behavioral psychology. 
+                    Track your progress, break bad habits, and see exactly how much money your habits are saving (or costing) you.
+                </p>
+                <div class="hero-cta">
+                    <button class="btn-primary-large" onclick="scrollToWaitlist()">
+                        Join the Waitlist - It's Free
+                    </button>
+                    <button class="btn-secondary-large" onclick="window.location.href='login.html'">
+                        Try Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">92%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">47</div>
+                        <div class="stat-label">Avg Streak (Days)</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">$2.4K</div>
+                        <div class="stat-label">Avg Saved/Year</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="app-preview">
+                    <div class="preview-card">
+                        <div class="preview-header">🏃 Morning Run</div>
+                        <div class="preview-streak">🔥 27 Day Streak</div>
+                        <div class="preview-progress"></div>
+                    </div>
+                    <div class="preview-card">
+                        <div class="preview-header">📚 Read 30 Minutes</div>
+                        <div class="preview-streak">⚡ 15 Day Streak</div>
+                        <div class="preview-progress" style="width:60%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <p class="proof-text">Trusted by habit builders at</p>
+            <div class="company-logos">
+                <div class="logo-placeholder">Google</div>
+                <div class="logo-placeholder">Microsoft</div>
+                <div class="logo-placeholder">Amazon</div>
+                <div class="logo-placeholder">Apple</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section">
+        <div class="container">
+            <h2 class="section-title">Why Most Habit Apps Fail</h2>
+            <div class="problems-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">❌</div>
+                    <h3>Just Glorified To-Do Lists</h3>
+                    <p>They track what you do, but don't help you understand WHY you fail or how to succeed.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">😴</div>
+                    <h3>No Real Motivation</h3>
+                    <p>Generic reminders don't work. You need identity-based motivation and real consequences.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">💸</div>
+                    <h3>Ignore Your Money</h3>
+                    <p>Your habits cost or save you thousands per year. Other apps never show you this connection.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Built on Behavioral Science</h2>
+            <p class="section-subtitle">Every feature is designed using proven psychology principles</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Identity-Based Habits</h3>
+                    <p>Become the person you want to be. "I am a runner" is 3x more effective than "I want to run."</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Financial Impact Tracker</h3>
+                    <p>See exactly how much money you're saving or losing. "Quit smoking = $3,600/year saved"</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌊</div>
+                    <h3>Urge Surfing</h3>
+                    <p>Science-backed technique to ride out cravings. Break bad habits by understanding your triggers.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔥</div>
+                    <h3>Streak Intelligence</h3>
+                    <p>Smart streak recovery, fresh start detection, and milestone celebrations that actually motivate.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Deep Analytics</h3>
+                    <p>Find patterns in your failures. Discover what triggers success. Data-driven improvement.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <h3>Gamification Done Right</h3>
+                    <p>Points, levels, achievements - but tied to real psychology, not just dopamine hits.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Take the Psychology Quiz</h3>
+                    <p>5 questions to understand your habits, goals, and financial targets.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Get Personalized Habits</h3>
+                    <p>We suggest habits based on your profile and show the financial impact.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Track & Build Identity</h3>
+                    <p>Every check-in reinforces who you're becoming, not just what you did.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>See Real Results</h3>
+                    <p>Watch your streaks grow, money saved increase, and identity solidify.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Success Stories</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p class="testimonial-text">"The financial tracker changed everything. Seeing I was spending $800/month on takeout made me actually cook. Down 30lbs and saved $4K in 6 months."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨</div>
+                        <div>
+                            <div class="author-name">Marcus T.</div>
+                            <div class="author-title">Software Engineer</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p class="testimonial-text">"I've tried every habit app. This is different. The identity system actually works - I went from 'wanting to exercise' to 'being an athlete' in my mind."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩</div>
+                        <div>
+                            <div class="author-name">Sarah K.</div>
+                            <div class="author-title">Marketing Director</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                    <p class="testimonial-text">"Quit smoking after 12 years. The urge surfing feature and seeing '$3,600/year saved' kept me going through tough moments. 147 days clean."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨</div>
+                        <div>
+                            <div class="author-name">David R.</div>
+                            <div class="author-title">Teacher</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <h2 class="section-title">Simple, Honest Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/forever</span></div>
+                    <ul class="pricing-features">
+                        <li>✅ 3 active habits</li>
+                        <li>✅ Basic streak tracking</li>
+                        <li>✅ Identity system</li>
+                        <li>✅ Financial impact</li>
+                        <li>❌ Advanced analytics</li>
+                        <li>❌ Unlimited habits</li>
+                        <li>❌ Habit templates</li>
+                    </ul>
+                    <button class="btn-pricing" onclick="window.location.href='signup.html'">Get Started Free</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="badge">MOST POPULAR</div>
+                    <h3>Premium</h3>
+                    <div class="price">$9.99<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>✅ Unlimited habits</li>
+                        <li>✅ Advanced analytics</li>
+                        <li>✅ AI coaching insights</li>
+                        <li>✅ Habit templates library</li>
+                        <li>✅ Streak insurance</li>
+                        <li>✅ Export data</li>
+                        <li>✅ Priority support</li>
+                    </ul>
+                    <button class="btn-pricing-featured" onclick="scrollToWaitlist()">Join Waitlist</button>
+                    <p class="pricing-note">Coming Soon</p>
+                </div>
+                
+                <div class="pricing-card">
+                    <h3>Yearly</h3>
+                    <div class="price">$59.99<span>/year</span></div>
+                    <div class="savings">Save $60 (50% off)</div>
+                    <ul class="pricing-features">
+                        <li>✅ Everything in Premium</li>
+                        <li>✅ 2 months free</li>
+                        <li>✅ Lifetime streak freeze</li>
+                        <li>✅ Exclusive templates</li>
+                        <li>✅ Early access to features</li>
+                    </ul>
+                    <button class="btn-pricing" onclick="scrollToWaitlist()">Join Waitlist</button>
+                    <p class="pricing-note">Coming Soon</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist Section -->
+    <section id="waitlist" class="waitlist-section">
+        <div class="container">
+            <div class="waitlist-box">
+                <h2>Join 5,000+ People on the Waitlist</h2>
+                <p>Get early access to Premium features when we launch. Plus, first 1,000 people get 50% off for life.</p>
+                <form id="waitlistForm" class="waitlist-form">
+                    <input type="email" id="waitlistEmail" placeholder="Enter your email" required>
+                    <button type="submit" class="btn-submit">Join Waitlist</button>
+                </form>
+                <p class="waitlist-success" id="successMessage" style="display:none;">🎉 You're on the list! Check your email for updates.</p>
+                <p class="privacy-note">We respect your privacy. Unsubscribe anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">🎯 HavHabit</div>
+                    <p>The psychology-first habit tracker</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="login.html">Login</a>
+                        <a href="signup.html">Sign Up</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#about">About</a>
+                        <a href="#blog">Blog</a>
+                        <a href="#careers">Careers</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="#help">Help Center</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#privacy">Privacy</a>
+                        <a href="#terms">Terms</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 HavHabit. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="landing.js"></script>
+</body>
+</html>

@@ -113,6 +113,11 @@ function toggleToday(habitId){
     h.completions = h.completions || [];
     const wasCompleted = h.completions.includes(todayISO);
     
+    // Haptic feedback for native apps
+    if (window.nativeApp && window.nativeApp.isNative()) {
+        window.nativeApp.hapticImpact('light').catch(() => {});
+    }
+    
     if (wasCompleted){
         h.completions = h.completions.filter(d=>d!==todayISO);
         // LOSS: Deduct points for unchecking
@@ -122,6 +127,11 @@ function toggleToday(habitId){
         // GAIN: Award points for completion
         const points = calculateCompletionPoints(h);
         updatePoints(points, `Completed: ${h.name}`);
+        
+        // Success haptic
+        if (window.nativeApp && window.nativeApp.isNative()) {
+            window.nativeApp.hapticNotification('success').catch(() => {});
+        }
         
         // Check for streak milestones
         const streak = computeStreak(h);
@@ -744,12 +754,32 @@ window.closePostMortem = function(){
 // EVIDENCE COLLECTION
 // ========================================
 
-function captureHabitEvidence(habitId){
+async function captureHabitEvidence(habitId){
     const h = state.habits.find(habit => habit.id === habitId);
     if(!h) return;
     
-    // In a real app, this would use camera API
-    // For now, we'll simulate with file input
+    // Use native camera if available
+    if (window.nativeApp && window.nativeApp.isNative()) {
+        try {
+            const photoData = await window.nativeApp.capturePhoto();
+            if (photoData) {
+                analyticsData.evidencePhotos.push({
+                    habitId,
+                    habitName: h.name,
+                    timestamp: new Date().toISOString(),
+                    data: photoData
+                });
+                saveAnalytics();
+                showNotification('📸 Evidence captured!', 'Photo proof added');
+                await window.nativeApp.hapticNotification('success');
+            }
+            return;
+        } catch (e) {
+            console.error('Native camera failed, falling back to web:', e);
+        }
+    }
+    
+    // Web fallback
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -980,6 +1010,10 @@ for(const h of state.habits){
     const difficultyEmoji = {'tiny':'🐣','easy':'😌','medium':'⚖️','hard':'💪'}[h.difficulty || 'medium'];
 
     card.innerHTML = `
+      <div class="habit-quick-actions">
+        <button class="quick-action-btn js-quick-edit" title="Quick Edit">✏️</button>
+        <button class="quick-action-btn js-quick-delete" title="Quick Delete">🗑️</button>
+      </div>
       <div class="habit-row">
         <input type="checkbox" class="chk" ${doneToday? 'checked':''} aria-label="Mark ${escapeHtml(h.name)} ${isBadHabit ? 'avoided' : 'done'} for today" />
         <div style="flex:1">
@@ -1014,6 +1048,7 @@ for(const h of state.habits){
           <button class="icon-btn js-evidence" title="Add Evidence">📸 Photo Proof</button>
         `}
         ${!h.identity ? `<button class="icon-btn js-identity" title="Set Identity">🎯 I Am...</button>` : ''}
+        <button class="icon-btn js-view-details" title="View Full Details">📊 Details</button>
         <button class="icon-btn js-toggle">${isBadHabit ? 'Toggle Avoided' : 'Toggle Today'}</button>
         <button class="icon-btn js-note">💭 Note</button>
         <button class="icon-btn js-export">Export</button>
@@ -1054,6 +1089,9 @@ card.querySelector('.chk').addEventListener('change', handleToggle);
 // Identity setting
 card.querySelector('.js-identity')?.addEventListener('click', ()=> showIdentitySelection(h.id));
 
+// View detailed habit modal
+card.querySelector('.js-view-details')?.addEventListener('click', ()=> showHabitDetailModal(h.id));
+
 // Micro-commitment (10% rule)
 card.querySelector('.js-micro')?.addEventListener('click', ()=> logMicroCommitment(h.id));
 
@@ -1089,12 +1127,111 @@ card.querySelector('.js-export').addEventListener('click', ()=> {
 });
 card.querySelector('.js-delete').addEventListener('click', ()=> {
     if(confirm(`Delete "${h.name}"? This cannot be undone.`)){
+        pushUndo('Delete habit', { habit: JSON.parse(JSON.stringify(h)) });
         deleteHabit(h.id);
+        showToast(`Deleted: ${h.name}`, 'success', 3000, [{
+            id: 'undo',
+            label: 'Undo',
+            callback: undo
+        }]);
     }
 });
 
+// Quick action buttons
+card.querySelector('.js-quick-edit')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openEditModal(h.id);
+});
+
+card.querySelector('.js-quick-delete')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if(confirm(`Delete "${h.name}"? This cannot be undone.`)){
+        pushUndo('Delete habit', { habit: JSON.parse(JSON.stringify(h)) });
+        deleteHabit(h.id);
+        showToast(`Deleted: ${h.name}`, 'success', 3000, [{
+            id: 'undo',
+            label: 'Undo',
+            callback: undo
+        }]);
+    }
+});
+
+// Bulk select mode
+if (bulkSelectMode) {
+    card.classList.add('selectable');
+    if (selectedHabits.has(h.id)) {
+        card.classList.add('bulk-selected');
+    }
+    
+    card.addEventListener('click', (e) => {
+        // Don't trigger on button clicks
+        if (e.target.closest('button') || e.target.closest('input[type="checkbox"]')) {
+            return;
+        }
+        
+        e.stopPropagation();
+        if (selectedHabits.has(h.id)) {
+            selectedHabits.delete(h.id);
+            card.classList.remove('bulk-selected');
+        } else {
+            selectedHabits.add(h.id);
+            card.classList.add('bulk-selected');
+        }
+    });
+}
+
 $habits.appendChild(card);
     }
+}
+
+// Add quick edit modal function
+function openEditModal(habitId) {
+    const habit = state.habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3>✏️ Edit Habit</h3>
+            <form id="editForm">
+                <div class="form-group">
+                    <label>Habit Name</label>
+                    <input type="text" id="editName" value="${escapeHtml(habit.name)}" required />
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="editCategory" value="${escapeHtml(habit.category || '')}" />
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="editType">
+                        <option value="good" ${habit.type !== 'bad' ? 'selected' : ''}>Good Habit</option>
+                        <option value="bad" ${habit.type === 'bad' ? 'selected' : ''}>Bad Habit</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.getElementById('editName').focus();
+    
+    document.getElementById('editForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        pushUndo('Edit habit', { oldHabit: JSON.parse(JSON.stringify(habit)) });
+        habit.name = document.getElementById('editName').value;
+        habit.category = document.getElementById('editCategory').value;
+        habit.type = document.getElementById('editType').value;
+        saveData(state);
+        render();
+        modal.remove();
+        showToast('Habit updated', 'success');
+    });
 }
 
 //Form Handling
@@ -1993,3 +2130,706 @@ function initializeSuggestedHabits() {
 
 // Call initialization on page load
 initializeSuggestedHabits();
+
+// ================================
+// UX ENHANCEMENTS
+// ================================
+
+// Undo/Redo System
+const undoStack = [];
+const MAX_UNDO_HISTORY = 20;
+
+function createUndoState(action, data) {
+    return {
+        action,
+        data,
+        timestamp: Date.now(),
+        state: JSON.parse(JSON.stringify(state)) // Deep clone current state
+    };
+}
+
+function pushUndo(action, data) {
+    undoStack.push(createUndoState(action, data));
+    if (undoStack.length > MAX_UNDO_HISTORY) {
+        undoStack.shift();
+    }
+}
+
+function undo() {
+    if (undoStack.length === 0) {
+        showToast('Nothing to undo', 'info');
+        return;
+    }
+    
+    const undoState = undoStack.pop();
+    state = undoState.state;
+    saveData(state);
+    render();
+    showToast(`Undone: ${undoState.action}`, 'success');
+}
+
+// Toast Notification System
+function showToast(message, type = 'info', duration = 3000, actions = []) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icon = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    }[type] || 'ℹ️';
+    
+    let actionsHTML = '';
+    if (actions.length > 0) {
+        actionsHTML = '<div class="toast-actions">';
+        actions.forEach(action => {
+            actionsHTML += `<button class="toast-action" data-action="${action.id}">${action.label}</button>`;
+        });
+        actionsHTML += '</div>';
+    }
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+        ${actionsHTML}
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Handle action clicks
+    toast.querySelectorAll('.toast-action').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const actionId = btn.dataset.action;
+            const action = actions.find(a => a.id === actionId);
+            if (action && action.callback) {
+                action.callback();
+            }
+            toast.remove();
+        });
+    });
+    
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// Keyboard Shortcuts
+let selectedHabitIndex = -1;
+let bulkSelectMode = false;
+const selectedHabits = new Set();
+
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ignore if typing in input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+            return;
+        }
+        
+        const key = e.key.toLowerCase();
+        
+        // Tab switching: 1-4
+        if (['1', '2', '3', '4'].includes(key)) {
+            const tabs = ['dashboard', 'analytics', 'achievements', 'insights'];
+            const tabIndex = parseInt(key) - 1;
+            if (tabs[tabIndex]) {
+                updateTabContent(tabs[tabIndex]);
+                document.querySelectorAll('.nav-tab').forEach((tab, i) => {
+                    tab.classList.toggle('active', i === tabIndex);
+                });
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // New habit: N
+        if (key === 'n') {
+            document.getElementById('habitName')?.focus();
+            document.querySelector('.add-habit-section')?.scrollIntoView({ behavior: 'smooth' });
+            e.preventDefault();
+            return;
+        }
+        
+        // Undo: Ctrl+Z or Cmd+Z
+        if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
+            undo();
+            e.preventDefault();
+            return;
+        }
+        
+        // Bulk select mode: Shift
+        if (e.shiftKey && !bulkSelectMode) {
+            bulkSelectMode = true;
+            document.body.classList.add('bulk-select-mode');
+            showToast('Bulk select mode ON. Click habits to select.', 'info');
+        }
+        
+        // Escape: Clear selection / Exit bulk mode
+        if (key === 'escape') {
+            if (bulkSelectMode) {
+                exitBulkSelectMode();
+                e.preventDefault();
+            }
+        }
+        
+        // Space: Toggle first habit or selected habit
+        if (key === ' ') {
+            if (state.habits.length > 0) {
+                const targetIndex = selectedHabitIndex >= 0 ? selectedHabitIndex : 0;
+                if (state.habits[targetIndex]) {
+                    toggleToday(state.habits[targetIndex].id);
+                    showToast(`Toggled: ${state.habits[targetIndex].name}`, 'success');
+                }
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // Arrow navigation
+        if (['arrowup', 'arrowdown'].includes(key)) {
+            if (state.habits.length === 0) return;
+            
+            if (key === 'arrowdown') {
+                selectedHabitIndex = Math.min(selectedHabitIndex + 1, state.habits.length - 1);
+            } else {
+                selectedHabitIndex = Math.max(selectedHabitIndex - 1, 0);
+            }
+            
+            highlightSelectedHabit();
+            e.preventDefault();
+            return;
+        }
+        
+        // Delete selected: D
+        if (key === 'd' && selectedHabitIndex >= 0) {
+            const habit = state.habits[selectedHabitIndex];
+            if (habit) {
+                pushUndo('Delete habit', { habit });
+                deleteHabit(habit.id);
+                showToast(`Deleted: ${habit.name}`, 'success', 3000, [{
+                    id: 'undo',
+                    label: 'Undo',
+                    callback: undo
+                }]);
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // Edit selected: E
+        if (key === 'e' && selectedHabitIndex >= 0) {
+            const habit = state.habits[selectedHabitIndex];
+            if (habit) {
+                openEditModal(habit.id);
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // Bulk actions when in bulk mode
+        if (bulkSelectMode && selectedHabits.size > 0) {
+            // Complete all selected: C
+            if (key === 'c') {
+                bulkComplete();
+                e.preventDefault();
+                return;
+            }
+            
+            // Delete all selected: Delete or Backspace
+            if (key === 'delete' || key === 'backspace') {
+                bulkDelete();
+                e.preventDefault();
+                return;
+            }
+        }
+        
+        // Show shortcuts help: ?
+        if (key === '?' || (e.shiftKey && key === '/')) {
+            showKeyboardShortcutsHelp();
+            e.preventDefault();
+            return;
+        }
+    });
+    
+    // Exit bulk mode when Shift is released
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'Shift' && bulkSelectMode) {
+            // Don't exit immediately, let user keep selecting
+        }
+    });
+}
+
+function highlightSelectedHabit() {
+    document.querySelectorAll('.habit-card').forEach((card, index) => {
+        card.classList.toggle('keyboard-selected', index === selectedHabitIndex);
+    });
+    
+    // Scroll into view
+    const cards = document.querySelectorAll('.habit-card');
+    if (cards[selectedHabitIndex]) {
+        cards[selectedHabitIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function exitBulkSelectMode() {
+    bulkSelectMode = false;
+    selectedHabits.clear();
+    document.body.classList.remove('bulk-select-mode');
+    document.querySelectorAll('.habit-card').forEach(card => {
+        card.classList.remove('bulk-selected');
+    });
+    showToast('Bulk select mode OFF', 'info');
+}
+
+function bulkComplete() {
+    let count = 0;
+    selectedHabits.forEach(habitId => {
+        const habit = state.habits.find(h => h.id === habitId);
+        if (habit && !isDoneToday(habit)) {
+            toggleToday(habitId);
+            count++;
+        }
+    });
+    showToast(`Completed ${count} habits`, 'success');
+    exitBulkSelectMode();
+}
+
+function bulkDelete() {
+    if (!confirm(`Delete ${selectedHabits.size} selected habits?`)) return;
+    
+    pushUndo('Bulk delete', { habitIds: Array.from(selectedHabits) });
+    
+    selectedHabits.forEach(habitId => {
+        deleteHabit(habitId);
+    });
+    
+    showToast(`Deleted ${selectedHabits.size} habits`, 'success', 3000, [{
+        id: 'undo',
+        label: 'Undo',
+        callback: undo
+    }]);
+    
+    exitBulkSelectMode();
+}
+
+function showKeyboardShortcutsHelp() {
+    const shortcuts = [
+        { key: '1-4', desc: 'Switch between tabs' },
+        { key: 'N', desc: 'New habit (focus form)' },
+        { key: 'Space', desc: 'Toggle selected habit' },
+        { key: '↑/↓', desc: 'Navigate habits' },
+        { key: 'E', desc: 'Edit selected habit' },
+        { key: 'D', desc: 'Delete selected habit' },
+        { key: 'Shift', desc: 'Enter bulk select mode' },
+        { key: 'C', desc: 'Complete selected (bulk mode)' },
+        { key: 'Esc', desc: 'Exit bulk mode' },
+        { key: 'Ctrl+Z', desc: 'Undo last action' },
+        { key: '?', desc: 'Show this help' }
+    ];
+    
+    let html = '<div class="shortcuts-help"><h3>⌨️ Keyboard Shortcuts</h3><div class="shortcuts-list">';
+    shortcuts.forEach(s => {
+        html += `<div class="shortcut-item"><kbd>${s.key}</kbd><span>${s.desc}</span></div>`;
+    });
+    html += '</div></div>';
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `<div class="modal-content">${html}<button onclick="this.closest('.modal-overlay').remove()" class="btn-primary">Got it!</button></div>`;
+    document.body.appendChild(modal);
+}
+
+// Smart Form Enhancements
+function initSmartForm() {
+    const form = document.getElementById('addForm');
+    const nameInput = document.getElementById('habitName');
+    const categoryInput = document.getElementById('habitCategory');
+    
+    if (!form || !nameInput) return;
+    
+    // Autofocus on page load
+    setTimeout(() => nameInput.focus(), 500);
+    
+    // Enter to submit
+    form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.querySelector('button[type="submit"]')?.click();
+        }
+    });
+    
+    // Smart category suggestions as you type
+    if (categoryInput) {
+        const commonCategories = ['Health', 'Fitness', 'Productivity', 'Learning', 'Finance', 'Social', 'Mindfulness', 'Creative'];
+        const datalist = document.createElement('datalist');
+        datalist.id = 'category-suggestions';
+        commonCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            datalist.appendChild(option);
+        });
+        categoryInput.setAttribute('list', 'category-suggestions');
+        categoryInput.parentNode.appendChild(datalist);
+    }
+    
+    // Smart habit name suggestions based on keywords
+    nameInput.addEventListener('input', debounce(() => {
+        const value = nameInput.value.toLowerCase();
+        if (value.length < 3) return;
+        
+        const suggestions = getHabitSuggestions(value);
+        if (suggestions.length > 0) {
+            showInlineSuggestions(nameInput, suggestions);
+        }
+    }, 300));
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function getHabitSuggestions(keyword) {
+    const templates = {
+        'water': { name: 'Drink 8 glasses of water', type: 'good', category: 'Health' },
+        'exercise': { name: 'Exercise for 30 minutes', type: 'good', category: 'Fitness' },
+        'read': { name: 'Read for 20 minutes', type: 'good', category: 'Learning' },
+        'meditate': { name: 'Meditate for 10 minutes', type: 'good', category: 'Mindfulness' },
+        'sleep': { name: 'Sleep 8 hours', type: 'good', category: 'Health' },
+        'journal': { name: 'Write in journal', type: 'good', category: 'Mindfulness' },
+        'walk': { name: 'Take a 15-minute walk', type: 'good', category: 'Fitness' },
+        'code': { name: 'Code for 1 hour', type: 'good', category: 'Learning' },
+        'smoking': { name: 'Avoid smoking', type: 'bad', category: 'Health' },
+        'social': { name: 'Avoid social media before bed', type: 'bad', category: 'Productivity' },
+        'junk': { name: 'Avoid junk food', type: 'bad', category: 'Health' }
+    };
+    
+    const matches = [];
+    for (const [key, template] of Object.entries(templates)) {
+        if (key.includes(keyword) || keyword.includes(key)) {
+            matches.push(template);
+        }
+    }
+    
+    return matches;
+}
+
+function showInlineSuggestions(input, suggestions) {
+    // Remove existing suggestions
+    document.querySelectorAll('.habit-suggestions').forEach(el => el.remove());
+    
+    const container = document.createElement('div');
+    container.className = 'habit-suggestions';
+    
+    suggestions.slice(0, 3).forEach(suggestion => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'suggestion-btn';
+        btn.innerHTML = `💡 ${suggestion.name} <span class="suggestion-meta">${suggestion.category}</span>`;
+        btn.addEventListener('click', () => {
+            document.getElementById('habitName').value = suggestion.name;
+            document.getElementById('habitType').value = suggestion.type;
+            document.getElementById('habitCategory').value = suggestion.category;
+            container.remove();
+        });
+        container.appendChild(btn);
+    });
+    
+    input.parentNode.appendChild(container);
+}
+
+// Initialize all UX enhancements
+initKeyboardShortcuts();
+initSmartForm();
+
+// Habit Detail View Modal
+function showHabitDetailModal(habitId) {
+    const habit = state.habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    const streak = computeStreak(habit);
+    const bestStreak = computeBestStreak(habit);
+    const completions = habit.completions || [];
+    const totalCompletions = completions.length;
+    const isBadHabit = habit.type === 'bad';
+    
+    // Calculate statistics
+    const last30Days = getCompletionsInRange(habit, 30);
+    const last7Days = getCompletionsInRange(habit, 7);
+    const successRate30 = ((last30Days.length / 30) * 100).toFixed(1);
+    const successRate7 = ((last7Days.length / 7) * 100).toFixed(1);
+    
+    // Get failure patterns
+    const failures = getFailurePatterns(habit);
+    
+    // Build calendar view
+    const calendarHTML = buildMiniCalendar(habit);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay habit-detail-modal';
+    modal.innerHTML = `
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>📊 ${escapeHtml(habit.name)}</h2>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+            </div>
+            
+            <div class="habit-detail-grid">
+                <!-- Stats Overview -->
+                <div class="detail-section">
+                    <h3>📈 Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value">${streak}</div>
+                            <div class="stat-label">Current Streak</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${bestStreak}</div>
+                            <div class="stat-label">Best Streak</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${totalCompletions}</div>
+                            <div class="stat-label">Total ${isBadHabit ? 'Avoided' : 'Completed'}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${successRate30}%</div>
+                            <div class="stat-label">30-Day Success</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${successRate7}%</div>
+                            <div class="stat-label">7-Day Success</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${getDaysAsIdentity(habit)}</div>
+                            <div class="stat-label">Days as Identity</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar View -->
+                <div class="detail-section">
+                    <h3>📅 Completion History</h3>
+                    <div class="habit-calendar">
+                        ${calendarHTML}
+                    </div>
+                    <div class="calendar-legend">
+                        <span><span class="legend-box completed"></span> Completed</span>
+                        <span><span class="legend-box missed"></span> Missed</span>
+                        <span><span class="legend-box future"></span> Future</span>
+                    </div>
+                </div>
+                
+                <!-- Failure Patterns -->
+                ${failures.length > 0 ? `
+                <div class="detail-section">
+                    <h3>⚠️ Failure Patterns</h3>
+                    <div class="failure-list">
+                        ${failures.map(f => `
+                            <div class="failure-item">
+                                <strong>${f.pattern}</strong>: Failed ${f.count} times
+                                ${f.suggestion ? `<p class="suggestion">💡 ${f.suggestion}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Quick Actions -->
+                <div class="detail-section">
+                    <h3>⚡ Quick Actions</h3>
+                    <div class="detail-actions">
+                        <button class="btn-action" onclick="exportHabitData('${habit.id}')">
+                            📊 Export Data
+                        </button>
+                        <button class="btn-action" onclick="shareHabitProgress('${habit.id}')">
+                            📤 Share Progress
+                        </button>
+                        ${streak > 0 ? `
+                        <button class="btn-action btn-warning" onclick="freezeStreak('${habit.id}')">
+                            ❄️ Freeze Streak (1 day)
+                        </button>
+                        ` : ''}
+                        <button class="btn-action btn-danger" onclick="if(confirm('Delete this habit?')) { deleteHabit('${habit.id}'); this.closest('.modal-overlay').remove(); }">
+                            🗑️ Delete Habit
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function buildMiniCalendar(habit) {
+    const today = new Date();
+    const days = [];
+    
+    // Show last 42 days (6 weeks)
+    for (let i = 41; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().slice(0, 10);
+        
+        const isCompleted = (habit.completions || []).includes(dateStr);
+        const isFuture = date > today;
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayNum = date.getDate();
+        
+        let className = 'calendar-day';
+        if (isFuture) className += ' future';
+        else if (isCompleted) className += ' completed';
+        else className += ' missed';
+        
+        days.push(`
+            <div class="${className}" title="${dateStr}${isCompleted ? ' - Completed' : ''}">
+                <div class="day-name">${dayName}</div>
+                <div class="day-num">${dayNum}</div>
+            </div>
+        `);
+    }
+    
+    return `<div class="calendar-grid">${days.join('')}</div>`;
+}
+
+function getCompletionsInRange(habit, days) {
+    const today = new Date();
+    const completions = habit.completions || [];
+    const rangeStart = new Date(today);
+    rangeStart.setDate(rangeStart.getDate() - days);
+    
+    return completions.filter(dateStr => {
+        const date = new Date(dateStr);
+        return date >= rangeStart && date <= today;
+    });
+}
+
+function getFailurePatterns(habit) {
+    const patterns = [];
+    const completions = habit.completions || [];
+    
+    if (completions.length < 7) return patterns;
+    
+    // Analyze day of week patterns
+    const dayStats = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const today = new Date();
+    
+    for (let i = 0; i < 30; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().slice(0, 10);
+        const dayOfWeek = date.getDay();
+        
+        if (!completions.includes(dateStr)) {
+            dayStats[dayOfWeek]++;
+        }
+    }
+    
+    // Find problematic days
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const maxFailures = Math.max(...Object.values(dayStats));
+    
+    if (maxFailures >= 3) {
+        Object.entries(dayStats).forEach(([day, failures]) => {
+            if (failures >= 3) {
+                patterns.push({
+                    pattern: `${dayNames[day]}s are difficult`,
+                    count: failures,
+                    suggestion: `Set a reminder for ${dayNames[day]}s or adjust your routine`
+                });
+            }
+        });
+    }
+    
+    // Check for weekend struggles
+    const weekendFailures = dayStats[0] + dayStats[6];
+    const weekdayFailures = dayStats[1] + dayStats[2] + dayStats[3] + dayStats[4] + dayStats[5];
+    
+    if (weekendFailures > weekdayFailures * 0.6) {
+        patterns.push({
+            pattern: 'Weekend struggles',
+            count: weekendFailures,
+            suggestion: 'Plan weekend activities in advance to maintain consistency'
+        });
+    }
+    
+    return patterns;
+}
+
+function exportHabitData(habitId) {
+    const habit = state.habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    const csv = habitToCSV(habit);
+    downloadFile(csv, `${sanitizeFilename(habit.name)}_detailed.csv`, 'text/csv');
+    showToast('Habit data exported', 'success');
+}
+
+function shareHabitProgress(habitId) {
+    const habit = state.habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    const streak = computeStreak(habit);
+    const total = (habit.completions || []).length;
+    const text = `I've been working on "${habit.name}" 🎯\n\nCurrent streak: ${streak} days 🔥\nTotal completions: ${total}\n\nBuilding better habits with HavHabit!`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Habit Progress',
+            text: text
+        }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(text);
+        showToast('Progress copied to clipboard!', 'success');
+    }
+}
+
+function freezeStreak(habitId) {
+    const habit = state.habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    habit.streakFrozen = true;
+    habit.frozenUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    saveData(state);
+    showToast('Streak frozen for 1 day! ❄️', 'success');
+    render();
+}
+
+// ================================
+// INITIALIZE NATIVE APP FEATURES
+// ================================
+
+// Wait for Capacitor to load, then initialize
+if (window.nativeApp) {
+    // Already loaded via module
+    window.nativeApp.init().then(() => {
+        console.log('Native app features initialized');
+    }).catch(err => {
+        console.log('Native init failed (running as web):', err);
+    });
+} else {
+    // Wait for module to load
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (window.nativeApp) {
+                window.nativeApp.init().catch(() => {});
+            }
+        }, 100);
+    });
+}

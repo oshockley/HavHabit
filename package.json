@@ -1,0 +1,36 @@
+{
+  "name": "havhabit",
+  "version": "1.0.0",
+  "description": "Build better habits with smart tracking. Enjoy real-time success scores, streak tracking, weekly goals, habit categories, motivational quotes, and simple analytics. Track progress from “Just Beginning” to “Elite Performer.” Switch between dark/light themes and stay secure with easy user authentication.",
+  "main": "auth.js",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "build": "cp *.html *.css *.js www/",
+    "sync": "npm run build && npx cap sync",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oshockley/HavHabit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oshockley/HavHabit/issues"
+  },
+  "homepage": "https://github.com/oshockley/HavHabit#readme",
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/camera": "^7.0.2",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/haptics": "^7.0.2",
+    "@capacitor/ios": "^7.4.4",
+    "@capacitor/local-notifications": "^7.0.3",
+    "@capacitor/push-notifications": "^7.0.3",
+    "@capacitor/status-bar": "^7.0.3"
+  }
+}
