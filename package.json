@@ -5,8 +5,9 @@
   "main": "auth.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
+    "postinstall": "prisma generate",
     "build:mobile": "mkdir -p www && cp *.html *.css *.js www/ || true",
     "sync": "npm run build:mobile && npx cap sync",
     "open:ios": "npx cap open ios",
