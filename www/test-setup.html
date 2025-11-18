@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>Quick Setup</title></head>
+<body>
+<h1>Quick Test Setup</h1>
+<button onclick="setupTestUser()">Create Test User & Login</button>
+<script>
+function setupTestUser() {
+    // Create test user
+    const testUser = {
+        id: 'test123',
+        email: 'test@test.com',
+        name: 'Test User',
+        password: '123456'
+    };
+    
+    // Save session
+    localStorage.setItem('havhabit:session', JSON.stringify(testUser));
+    localStorage.setItem(`onboarding:${testUser.id}:completed`, 'true');
+    
+    alert('Test user created! Redirecting to app...');
+    window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>

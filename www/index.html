@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0e1a">
+    <title>HavHabit - Habit Tracker</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <link rel="stylesheet" href="enhancements.css"/>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <h1>🎯 HavHabit</h1>
+            <p class="tagline">Build Better Habits</p>
+        </div>
+        
+        <div class="nav-menu">
+            <button class="nav-tab active" data-tab="dashboard">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-tab" data-tab="analytics">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Analytics</span>
+            </button>
+            <button class="nav-tab" data-tab="achievements">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-label">Achievements</span>
+            </button>
+            <button class="nav-tab" data-tab="insights">
+                <span class="nav-icon">💡</span>
+                <span class="nav-label">Insights</span>
+            </button>
+        </div>
+        
+        <div class="nav-actions">
+            <button id="exportCSV" class="btn-action btn-export" title="Export Data">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">Export</span>
+            </button>
+            <button id="resetAll" class="btn-action btn-reset" title="Reset All">
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">Reset</span>
+            </button>
+            <button id="logoutBtn" class="btn-action btn-logout" title="Logout">
+                <span class="btn-icon">🚪</span>
+                <span class="btn-text">Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="app-layout">
+        <!-- Main Content -->
+        <main class="main-content-full">
+            <!-- Success Score Banner -->
+            <div class="success-banner">
+                <div class="banner-grid">
+                    <div class="success-banner-content">
+                        <div class="success-info">
+                            <div class="success-level" id="successLevel">🚀 Just Beginning</div>
+                            <div class="success-title">Your Success Score</div>
+                        </div>
+                        <div class="success-percentage-large" id="successPercent">0%</div>
+                    </div>
+                    
+                    <!-- Quick Stats Inline -->
+                    <div class="quick-stats-inline">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="countHabits">0</div>
+                                <div class="stat-label">Total Habits</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="longestStreakSidebar">0d</div>
+                                <div class="stat-label">Best Streak</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="weekProgressSidebar">0%</div>
+                                <div class="stat-label">This Week</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress-bar-large" id="successMeter"><span></span></div>
+                <div class="motivational-quote-banner" id="motivationalQuote"></div>
+            </div>
+
+            <!-- Add Habit Section -->
+            <div class="add-habit-section">
+                <h2>➕ Add New Habit</h2>
+                <form id="addForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Habit Name</label>
+                            <input id="habitName" type="text" placeholder="e.g., Morning meditation" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select id="habitType" class="select-input">
+                                <option value="good">✅ Build (Good)</option>
+                                <option value="bad">🚫 Break (Bad)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="habitCategory" class="select-input">
+                                <option value="health">🏃 Health</option>
+                                <option value="learning">📚 Learning</option>
+                                <option value="productivity">💼 Productivity</option>
+                                <option value="mindfulness">🧘 Mindfulness</option>
+                                <option value="social">👥 Social</option>
+                                <option value="other">✨ Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Weekly Goal</label>
+                            <input id="weeklyGoal" type="number" placeholder="Days per week" min="1" max="7" value="7" class="number-input" />
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Habit Trigger (Optional)</label>
+                            <input id="habitTrigger" type="text" placeholder="After I [wake up], I will [meditate]..." class="trigger-input" />
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select id="habitDifficulty" class="select-input">
+                                <option value="tiny">🐣 Tiny (2-min version)</option>
+                                <option value="easy">😌 Easy</option>
+                                <option value="medium" selected>⚖️ Medium</option>
+                                <option value="hard">💪 Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full-width" id="replacementRow" style="display:none;">
+                        <label>Replacement Behavior</label>
+                        <input id="replacementBehavior" type="text" placeholder="Instead of [bad habit], I will [good alternative]..." />
+                    </div>
+                    <button class="btn-primary btn-add-habit" type="submit">
+                        <span>➕</span> Add Habit
+                    </button>
+                </form>
+            </div>
+
+            <!-- Gamification Section -->
+            <div class="gamification-section" id="gamificationSection" style="display:none;">
+                <div class="points-display">
+                    <div class="points-icon">⭐</div>
+                    <div class="points-info">
+                        <div class="points-value" id="totalPoints">0</div>
+                        <div class="points-label">Total Points</div>
+                    </div>
+                    <div class="level-badge" id="levelBadge">Level 1</div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+                <div class="habit-garden">
+                    <h4>🌱 Habit Garden</h4>
+                    <div id="gardenVisual" class="garden-grid"></div>
+                </div>
+            </div>
+
+            <!-- Contextual Tip -->
+            <div id="contextualTip"></div>
+
+            <!-- Fresh Start Effect Banner -->
+            <div id="freshStartBanner" class="fresh-start-banner" style="display:none;">
+                <div class="fresh-start-icon">🌅</div>
+                <div class="fresh-start-content">
+                    <h3 id="freshStartTitle">Fresh Start Opportunity!</h3>
+                    <p id="freshStartMessage">New beginnings are powerful. Today is the perfect day to reset your habits.</p>
+                    <button id="newChapterBtn" class="btn-fresh-start">🔄 Start New Chapter</button>
+                </div>
+            </div>
+
+            <!-- Insights Dashboard -->
+            <div class="insights-grid" id="insightsContainer" style="display:none;">
+                <div class="insight-box">
+                    <div class="insight-icon">🔥</div>
+                    <div class="insight-data">
+                        <div class="insight-value" id="longestStreak">0 days</div>
+                        <div class="insight-label">Longest Streak</div>
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-icon">⚠️</div>
+                    <div class="insight-data">
+                        <div class="insight-value" id="atRisk">0 habits</div>
+                        <div class="insight-label">At Risk</div>
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-icon">🎯</div>
+                    <div class="insight-data">
+                        <div class="insight-value" id="weekProgress">0%</div>
+                        <div class="insight-label">Week Progress</div>
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-icon">📊</div>
+                    <div class="insight-data">
+                        <div class="insight-value" id="completionRate">0%</div>
+                        <div class="insight-label">Completion Rate</div>
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-icon">🚫</div>
+                    <div class="insight-data">
+                        <div class="insight-value" id="badHabitsAvoided">0 days</div>
+                        <div class="insight-label">Bad Habits Avoided</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Charts -->
+            <div class="analytics-section" id="analyticsDashboard" style="display:none;">
+                <div class="chart-card">
+                    <h3>📊 Success by Category</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>📈 30-Day Progress</h3>
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div class="goals-card">
+                    <h3>📋 Weekly Goals Overview</h3>
+                    <div id="goalsOverview"></div>
+                </div>
+            </div>
+
+            <!-- Habits List -->
+            <div class="habits-section">
+                <h2>📝 Your Habits</h2>
+                <div id="habits" class="habits-grid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Identity Selection Modal -->
+    <div id="identityModal" class="identity-modal" style="display:none;">
+        <div class="modal-content identity-content">
+            <h2>🎯 Who Are You Becoming?</h2>
+            <p>Identity-based habits stick 3x longer. Choose your identity:</p>
+            <input type="text" id="habitIdentity" placeholder="I am a..." />
+            <div class="identity-examples">
+                <button class="identity-example" data-identity="runner">🏃 Runner</button>
+                <button class="identity-example" data-identity="reader">📚 Reader</button>
+                <button class="identity-example" data-identity="athlete">💪 Athlete</button>
+                <button class="identity-example" data-identity="healthy person">🥗 Healthy Person</button>
+                <button class="identity-example" data-identity="disciplined person">⚡ Disciplined Person</button>
+                <button class="identity-example" data-identity="learner">🎓 Learner</button>
+            </div>
+            <button id="saveIdentityBtn" class="btn-primary">Save My Identity</button>
+        </div>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div id="celebrationModal" class="celebration-modal" style="display:none;">
+        <div class="modal-content celebration-content">
+            <div class="confetti-container" id="confettiContainer"></div>
+            <div class="celebration-emoji">🎉</div>
+            <h2 id="celebrationTitle">Amazing!</h2>
+            <p id="celebrationMessage">You proved you're a champion today!</p>
+            <button class="btn-primary" onclick="closeCelebration()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Visceral Consequences Calculator -->
+    <div id="consequencesCalculator" class="consequences-modal" style="display:none;">
+        <div class="modal-content consequences-content">
+            <h3>⚠️ Real Cost of This Bad Habit</h3>
+            <div class="cost-breakdown" id="costBreakdown"></div>
+            <div class="time-travel-preview" id="timeTravelPreview"></div>
+            <button class="btn-secondary" onclick="closeConsequences()">I Understand</button>
+        </div>
+    </div>
+
+    <!-- Capacitor Core (Mobile App Support) -->
+    <script type="module" src="capacitor-bridge.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
