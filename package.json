@@ -5,7 +5,7 @@
   "main": "auth.js",
   "scripts": {
     "dev": "python -m http.server 8080",
-    "build": "mkdir -p www && cp *.html *.css *.js www/ 2>/dev/null || (md www 2>nul & copy *.html www\\ & copy *.css www\\ & copy *.js www\\)",
+    "build": "mkdir -p www && cp *.html *.css *.js www/ || true",
     "sync": "npm run build && npx cap sync",
     "open:ios": "npx cap open ios",
     "open:android": "npx cap open android",
