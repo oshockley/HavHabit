@@ -1,5 +1,6 @@
 // API Client for HavHabit Backend
-const API_URL = 'http://localhost:3000'; // Change to production URL after deployment
+// API Configuration
+const API_URL = 'https://havhabit.vercel.app'; // Change to production URL after deployment
 
 class APIClient {
   constructor() {
