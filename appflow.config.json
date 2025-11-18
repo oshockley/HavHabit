@@ -1,0 +1,5 @@
+{
+  "build": {
+    "npmCommand": "build:mobile"
+  }
+}

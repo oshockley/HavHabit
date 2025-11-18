@@ -4,9 +4,11 @@
   "description": "Build better habits with smart tracking. Enjoy real-time success scores, streak tracking, weekly goals, habit categories, motivational quotes, and simple analytics. Track progress from “Just Beginning” to “Elite Performer.” Switch between dark/light themes and stay secure with easy user authentication.",
   "main": "auth.js",
   "scripts": {
-    "dev": "python -m http.server 8080",
-    "build": "mkdir -p www && cp *.html *.css *.js www/ || true",
-    "sync": "npm run build && npx cap sync",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "build:mobile": "mkdir -p www && cp *.html *.css *.js www/ || true",
+    "sync": "npm run build:mobile && npx cap sync",
     "open:ios": "npx cap open ios",
     "open:android": "npx cap open android",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -31,6 +33,20 @@
     "@capacitor/ios": "^7.4.4",
     "@capacitor/local-notifications": "^7.0.3",
     "@capacitor/push-notifications": "^7.0.3",
-    "@capacitor/status-bar": "^7.0.3"
+    "@capacitor/status-bar": "^7.0.3",
+    "@prisma/client": "^6.19.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^16.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0",
+    "typescript": "^5.7.2"
   }
 }
